@@ -2,10 +2,9 @@ package com.example.clientdataserver.servlet;
 
 import com.example.clientdataserver.entities.AddressEntity;
 import com.example.clientdataserver.entities.ClientEntity;
-import com.example.clientdataserver.model.Address;
-import com.example.clientdataserver.model.Client;
+
 import com.example.clientdataserver.repository.RepositoryLocal;
-import com.example.clientdataserver.services.ClientService;
+
 import jakarta.ejb.EJB;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -27,8 +26,7 @@ public class CreateServlet extends HttpServlet {
         messageAddress = "Данные адреса клиента";
     }
 
-    @EJB
-    private ClientService clientService;
+
     @EJB
     private RepositoryLocal repositoryLocal;
 
@@ -64,17 +62,6 @@ public class CreateServlet extends HttpServlet {
             out.println("<h1>" + messageAddress + "</h1>");
             out.println("<form method=\"post\" action=\"CreateServlet\"> ");
             out.println("<input type=\"hidden\" name=\"id\" value=\"" + id + "\">");
-            /*
-            out.println("<input type=\"hidden\" name=\"id\" value=\"" + id + "\">" +
-                    "<input type=\"hidden\" name=\"Client_name\" value=\"" + clientName + "\">" +
-                    "<input type=\"hidden\" name=\"Type\" value=\"" +  clientType + "\">" +
-                    "<input type=\"hidden\" name=\"Added\" value=\"" + added + "\">");
-            out.println("<h3> ID: " + id + "</h3>");
-            out.println("<h3> Наименование клиента: " + clientName + "</h3>");
-            out.println("<h3> Тип клиента:" + clientType + "</h3>");
-            out.println("<h3> Дата добавления клиента:" + added + "</h3>");
-*/
-
             out.println("IP адрес устройства: <input type=\"text\" name=\"Device_IP\" maxlength=\"25\"\n" +
                     "         title=\"Введите правильно IP адрес\"\n" +
                     "         pattern=\"\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\"\n" +
@@ -112,50 +99,28 @@ public class CreateServlet extends HttpServlet {
         String address = request.getParameter("Address");
 
         if(clientName!=null) {
-            ClientEntity client = new ClientEntity();
-            client.setClientName(clientName);
-            client.setClientType(clientType);
-            client.setClientAdded(Date.valueOf(added));
-            repositoryLocal.update(client);
+            if(repositoryLocal.findByName(clientName).isEmpty()){
+                ClientEntity client = new ClientEntity();
+                client.setClientName(clientName);
+                client.setClientType(clientType);
+                client.setClientAdded(Date.valueOf(added));
+                repositoryLocal.update(client);
+            } else {
+                getServletContext().getRequestDispatcher("/ViewListServlet").forward(request,response);
+            }
         } else {
-            AddressEntity addressEntity = new AddressEntity();
-            addressEntity.setIp(ip);
-            addressEntity.setMac(mac);
-            addressEntity.setModel(model);
-            addressEntity.setAddress(address);
-            addressEntity.setClientId(repositoryLocal.findById(ClientEntity.class, Integer.parseInt(id)));
-            repositoryLocal.update(addressEntity);
+            if(repositoryLocal.findByMac(mac).isEmpty()){
+                AddressEntity addressEntity = new AddressEntity();
+                addressEntity.setIp(ip);
+                addressEntity.setMac(mac);
+                addressEntity.setModel(model);
+                addressEntity.setAddress(address);
+                addressEntity.setClientId(repositoryLocal.findById(ClientEntity.class, Integer.parseInt(id)));
+                repositoryLocal.update(addressEntity);
+            } else {
+                getServletContext().getRequestDispatcher("/ViewListServlet").forward(request,response);
+            }
         }
-
-        /*
-        if(clientName!=null) {
-            Client client = new Client(Integer.parseInt(id),clientName,clientType, added);
-            clientService.create(client);
-        } else {
-            Client client = clientService.findClient(Integer.parseInt(id));
-            client.setAddress(new Address(ip,mac,model,address));
-            clientService.create(client);
-        }
-
-         */
-        /*
-        Client client = new Client(Integer.parseInt(id),clientName,clientType, added);
-        client.setAddress(new Address(ip,mac,model,address));
-        clientService.create(client);
-
-
-
-        PrintWriter out = response.getWriter();
-
-        out.println("<form method=\"get\" action=\"ViewListServlet\"> ");
-        out.println("<button>Добавить адрес клиента</button>");
-        out.println("</form>");
-
-        out.println("<form method=\"get\" action=\"ViewListServlet\"> ");
-        out.println("<button>Просмотр базы данных</button>");
-        out.println("</form>");
-
-         */
 
         getServletContext().getRequestDispatcher("/ViewListServlet").forward(request,response);
     }

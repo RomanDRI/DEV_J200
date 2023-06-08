@@ -2,10 +2,9 @@ package com.example.clientdataserver.servlet;
 
 import com.example.clientdataserver.entities.AddressEntity;
 import com.example.clientdataserver.entities.ClientEntity;
-import com.example.clientdataserver.model.Address;
-import com.example.clientdataserver.model.Client;
+
 import com.example.clientdataserver.repository.RepositoryLocal;
-import com.example.clientdataserver.services.ClientService;
+
 import jakarta.ejb.EJB;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -16,12 +15,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Date;
-import java.text.SimpleDateFormat;
+import java.util.List;
 
 @WebServlet(name = "UpdateServlet", value = "/UpdateServlet")
 public class UpdateServlet extends HttpServlet {
-    @EJB
-    private ClientService clientService;
     @EJB
     private RepositoryLocal repositoryLocal;
     private String message;
@@ -36,8 +33,18 @@ public class UpdateServlet extends HttpServlet {
         response.setContentType("text/html; charset=UTF-8");
         request.setCharacterEncoding("UTF-8");
 
+
+
         String id = request.getParameter("id");
         String idAddress = request.getParameter("id_address");
+
+        ClientEntity clientEntity = repositoryLocal.findById(ClientEntity.class, Integer.parseInt(id));
+        List<AddressEntity> addressEntities = clientEntity.getAddressEntities();
+
+        String clientName = clientEntity.getClientName();
+        String clientType = clientEntity.getClientType();
+        String added = clientEntity.getClientAdded().toString();
+
 
         PrintWriter out = response.getWriter();
 
@@ -47,7 +54,7 @@ public class UpdateServlet extends HttpServlet {
             out.println("<form method=\"post\" action=\"UpdateServlet\"> ");
             out.println("<h3> ID: " + id + "</h3>");
             out.println("<input type=\"hidden\" name=\"id\" value=\"" + id + "\">");
-            out.println("Наименование клиента: <input type=\"text\" name=\"Client_name\" " +
+            out.println("Наименование клиента: <input type=\"text\" name=\"Client_name\" value=\"" + clientName + "\"" +
                     "title=\"Допускаются только русские буквы\"\n" +
                     "pattern=\"^[А-Яа-яЁё\\s\\d,.-]+$\"\n" +
                     "required/><br>");
@@ -57,37 +64,44 @@ public class UpdateServlet extends HttpServlet {
                     "    <option>Физическое лицо</option>\n" +
                     "  </select><br>");
             out.println("Дата добавления клиента:\n" +
-                    "  <input type=\"date\" name=\"Added\"/>\n" +
+                    "  <input type=\"date\" name=\"Added\" value=\"" + added + "\"" +
                     "  <br>");
             out.println("<button>Внести изменения</button>");
             out.println("</form>");
             out.println("</body></html>");
         } else {
-            out.println("<html><body>");
-            out.println("<h1>" + message2 + "</h1>");
-            out.println("<form method=\"post\" action=\"UpdateServlet\"> ");
-            out.println("<input type=\"hidden\" name=\"id_address\" value=\"" + idAddress + "\">");
-            out.println("<input type=\"hidden\" name=\"id\" value=\"" + id + "\">");
-            out.println("IP адрес устройства: <input type=\"text\" name=\"Device_IP\" maxlength=\"25\"\n" +
-                    "         title=\"Введите правильно IP адрес\"\n" +
-                    "         pattern=\"\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\"\n" +
-                    "         required/>\n" +
-                    "  <br>");
-            out.println("Mac адрес устройства:\n" +
-                    "  <input type=\"text\" name=\"Mac\" maxlength=\"20\"\n" +
-                    "         title=\"Введите правильно MAC адрес\"\n" +
-                    "         pattern=\"^([0-9A-Fa-f]{2}[-]){5}([0-9A-Fa-f]{2})$\"\n" +
-                    "         required/>\n" +
-                    "  <br>");
-            out.println("Модель устройства:\n" +
-                    "  <input type=\"text\" name=\"Device_model\" maxlength=\"100\" required/>\n" +
-                    "  <br>");
-            out.println("Адрес места нахождения:\n" +
-                    "  <input type=\"text\" name=\"Address\" maxlength=\"200\" required/>\n" +
-                    "  <br>");
-            out.println("<button>Внести изменения</button>");
-            out.println("</form>");
-            out.println("</body></html>");
+            for (AddressEntity addressEntity : addressEntities) {
+                String ip = addressEntity.getIp();
+                String mac = addressEntity.getMac();
+                String model = addressEntity.getModel();
+                String address = addressEntity.getAddress();
+
+                out.println("<html><body>");
+                out.println("<h1>" + message2 + "</h1>");
+                out.println("<form method=\"post\" action=\"UpdateServlet\"> ");
+                out.println("<input type=\"hidden\" name=\"id_address\" value=\"" + idAddress + "\">");
+                out.println("<input type=\"hidden\" name=\"id\" value=\"" + id + "\">");
+                out.println("IP адрес устройства: <input type=\"text\" name=\"Device_IP\" value=\"" + ip + "\" maxlength=\"25\"\n" +
+                        "         title=\"Введите правильно IP адрес\"\n" +
+                        "         pattern=\"\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\"\n" +
+                        "         required/>\n" +
+                        "  <br>");
+                out.println("Mac адрес устройства:\n" +
+                        "  <input type=\"text\" name=\"Mac\" value=\"" + mac + "\" maxlength=\"20\"\n" +
+                        "         title=\"Введите правильно MAC адрес\"\n" +
+                        "         pattern=\"^([0-9A-Fa-f]{2}[-]){5}([0-9A-Fa-f]{2})$\"\n" +
+                        "         required/>\n" +
+                        "  <br>");
+                out.println("Модель устройства:\n" +
+                        "  <input type=\"text\" name=\"Device_model\" value=\"" + model + "\" maxlength=\"100\" required/>\n" +
+                        "  <br>");
+                out.println("Адрес места нахождения:\n" +
+                        "  <input type=\"text\" name=\"Address\" value=\"" + address + "\" maxlength=\"200\" required/>\n" +
+                        "  <br>");
+                out.println("<button>Внести изменения</button>");
+                out.println("</form>");
+                out.println("</body></html>");
+            }
         }
     }
 

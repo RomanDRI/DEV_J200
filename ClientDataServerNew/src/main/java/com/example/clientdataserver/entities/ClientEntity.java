@@ -1,16 +1,17 @@
 package com.example.clientdataserver.entities;
 
-import com.example.clientdataserver.model.Address;
 import jakarta.persistence.*;
 
 import java.sql.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.LinkedList;
+import java.util.List;
+
 
 @Entity
 @Table(name = "client", schema = "client_and_address", catalog = "")
 @NamedQueries({
-        @NamedQuery(name = "Client.findAll", query = "SELECT c FROM ClientEntity c")})
+        @NamedQuery(name = "Client.findAll", query = "SELECT c FROM ClientEntity c")
+})
 public class ClientEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
@@ -27,7 +28,7 @@ public class ClientEntity {
     private Date clientAdded;
 
     @OneToMany(mappedBy = "client_id", fetch=FetchType.EAGER)
-    private Set<AddressEntity> addressEntities = new HashSet<>();
+    private List<AddressEntity> addressEntities = new LinkedList<>();
 
     public int getId() {
         return id;
@@ -61,11 +62,11 @@ public class ClientEntity {
         this.clientAdded = clientAdded;
     }
 
-    public Set<AddressEntity> getAddressEntities() {
+    public List<AddressEntity> getAddressEntities() {
         return addressEntities;
     }
 
-    public void setAddressEntities(Set<AddressEntity> addressEntities) {
+    public void setAddressEntities(List<AddressEntity> addressEntities) {
         this.addressEntities = addressEntities;
     }
 
